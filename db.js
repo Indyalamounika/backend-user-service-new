@@ -1,5 +1,5 @@
-const mysql = require("mysql2/promise");
-
+const mysql = require("mysql2");
+ 
 // Create connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -9,20 +9,22 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-  connectTimeout: 10000
+  queueLimit: 0
 });
-
+ 
 // Test DB connection
-const connect = async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log("User Service DB connected");
-    connection.release();
-  } catch (err) {
-    console.error("User Service DB connection failed:", err.message);
-    process.exit(1); // Important in ECS
-  }
+const connect = () => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("User Service DB connection failed:", err);
+    } else {
+      console.log("User Service DB connected");
+      connection.release();
+    }
+  });
 };
-
-module.expor
+ 
+module.exports = {
+  pool,
+  connect
+};
